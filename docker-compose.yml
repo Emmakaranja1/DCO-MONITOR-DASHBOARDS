@@ -1,0 +1,102 @@
+# DCO-Monitor Dashboard - Full Stack
+# Mini data-centre monitoring: Exporter + Prometheus + Grafana + Loki + Promtail
+
+services:
+  # 1. Custom DCO Prometheus Exporter
+  dco-exporter:
+    build:
+      context: .
+      network: host  # Uses host DNS during build (fixes "Temporary failure resolving")
+    container_name: dco-exporter
+    ports:
+      - "8001:8000"  # Host 8001 (change to 8000 if free)
+    volumes:
+      - dco_logs:/var/log
+    environment:
+      - DCO_EXPORTER_PORT=8000
+      - DCO_LOG_PATH=/var/log/dco_exporter.log
+      - DCO_SCRAPE_INTERVAL=10
+    networks:
+      - dco-monitor
+    restart: unless-stopped
+    # Nmap requires capabilities for raw socket scanning
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+
+  # 2. Prometheus - Metrics storage and querying
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: dco-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    networks:
+      - dco-monitor
+    restart: unless-stopped
+    depends_on:
+      - dco-exporter
+
+  # 3. Grafana - Visualization
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: dco-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - dco-monitor
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # 4. Loki - Log aggregation
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: dco-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - dco-monitor
+    restart: unless-stopped
+
+  # 5. Promtail - Log shipping to Loki
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: dco-promtail
+    volumes:
+      - ./promtail.yml:/etc/promtail/config.yml:ro
+      - dco_logs:/var/log:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - dco-monitor
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  dco_logs:
+
+networks:
+  dco-monitor:
+    driver: bridge
