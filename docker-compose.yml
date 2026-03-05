@@ -9,7 +9,7 @@ services:
       network: host  # Uses host DNS during build (fixes "Temporary failure resolving")
     container_name: dco-exporter
     ports:
-      - "8001:8000"  # Host 8001 (change to 8000 if free)
+      - "8001:8000"  # Host 8001 
     volumes:
       - dco_logs:/var/log
     environment:
