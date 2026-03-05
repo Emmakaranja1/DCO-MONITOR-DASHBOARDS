@@ -55,5 +55,4 @@ jobs:
           docker images dco-exporter:latest
           docker run --rm --entrypoint python dco-exporter:latest -c "import dco_exporter; print('Exporter module loads OK')"
 
-      - name: Fix lint issues
-        run: ruff check dco_exporter.py --fix && ruff format dco_exporter.py
+      
