@@ -57,3 +57,6 @@ jobs:
             import dco_exporter
             print('Exporter module loads OK')
           "
+
+      - name: Fix lint issues
+        run: ruff check dco_exporter.py --fix && ruff format dco_exporter.py
