@@ -9,6 +9,7 @@ from prometheus_client import Counter, Gauge, Info, start_http_server
 
 try:
     import nmap
+
     NMAP_AVAILABLE = True
 except ImportError:
     NMAP_AVAILABLE = False
