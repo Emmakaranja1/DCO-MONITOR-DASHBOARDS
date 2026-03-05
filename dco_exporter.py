@@ -9,6 +9,7 @@ from prometheus_client import Counter, Gauge, Info, start_http_server
 
 try:
     import nmap
+
     NMAP_AVAILABLE = True
 except ImportError:
     NMAP_AVAILABLE = False
@@ -54,9 +55,13 @@ load_average = Gauge("dco_load_average", "System load average", ["period"])
 # PROMETHEUS METRICS - Security Monitoring
 # =============================================================================
 open_ports_total = Gauge("dco_open_ports_total", "Total number of open ports detected")
-ports_by_service = Gauge("dco_ports_by_service", "Open ports by service name", ["target", "port", "state"])
+ports_by_service = Gauge(
+    "dco_ports_by_service", "Open ports by service name", ["target", "port", "state"]
+)
 security_risk_score = Gauge("dco_security_risk_score", "Calculated security risk score (0-100)")
-vulnerabilities_detected = Gauge("dco_vulnerabilities_detected", "Simulated vulnerabilities detected")
+vulnerabilities_detected = Gauge(
+    "dco_vulnerabilities_detected", "Simulated vulnerabilities detected"
+)
 high_risk_ports = Gauge("dco_high_risk_ports", "Number of high-risk ports exposed")
 scan_errors_total = Counter("dco_scan_errors_total", "Total scan errors encountered")
 
@@ -64,8 +69,12 @@ scan_errors_total = Counter("dco_scan_errors_total", "Total scan errors encounte
 # PROMETHEUS METRICS - Automation & Operations
 # =============================================================================
 exporter_uptime_seconds = Gauge("dco_exporter_uptime_seconds", "Exporter uptime in seconds")
-last_scan_timestamp = Gauge("dco_last_scan_timestamp_seconds", "Unix timestamp of last security scan")
-scan_duration_seconds = Gauge("dco_scan_duration_seconds", "Duration of last security scan in seconds")
+last_scan_timestamp = Gauge(
+    "dco_last_scan_timestamp_seconds", "Unix timestamp of last security scan"
+)
+scan_duration_seconds = Gauge(
+    "dco_scan_duration_seconds", "Duration of last security scan in seconds"
+)
 exporter_info = Info("dco_exporter", "DCO Exporter build and version info")
 
 # Ports of interest (SSH, HTTP, HTTPS, Grafana, Prometheus)
@@ -201,7 +210,10 @@ def collect_security_metrics() -> None:
 
     logger.info(
         "Security scan completed: targets=%s open_ports=%s high_risk=%s duration_sec=%s",
-        SCAN_TARGETS, total_open, high_risk_count, round(scan_duration, 2),
+        SCAN_TARGETS,
+        total_open,
+        high_risk_count,
+        round(scan_duration, 2),
     )
 
 
@@ -215,10 +227,12 @@ def main() -> None:
     port = int(os.environ.get("DCO_EXPORTER_PORT", "8000"))
     scrape_interval = int(os.environ.get("DCO_SCRAPE_INTERVAL", "10"))
 
-    exporter_info.info({
-        "version": "1.0.0",
-        "description": "DCO-Monitor Data Centre Operations Exporter",
-    })
+    exporter_info.info(
+        {
+            "version": "1.0.0",
+            "description": "DCO-Monitor Data Centre Operations Exporter",
+        }
+    )
 
     logger.info("Starting DCO Exporter on port %s", port)
     start_http_server(port)
