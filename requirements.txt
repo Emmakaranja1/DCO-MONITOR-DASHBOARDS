@@ -1,0 +1,8 @@
+# Prometheus metrics exposition
+prometheus_client>=0.19.0
+
+# System metrics collection
+psutil>=5.9.0
+
+# Lightweight security scanning (localhost + docker network only)
+python-nmap>=0.7.1
