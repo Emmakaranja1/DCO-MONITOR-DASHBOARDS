@@ -4,9 +4,8 @@ import sys
 import time
 from pathlib import Path
 
-
-from prometheus_client import Counter, Gauge, Info, start_http_server
 import psutil
+from prometheus_client import Counter, Gauge, Info, start_http_server
 
 try:
     import nmap
